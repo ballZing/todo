@@ -2,13 +2,13 @@
   <div id="root">
     <div class="todo-container">
       <div class="todo-wrap">
-        <MyHeader :addTodo="addTodo" />
-        <MyList
+        <MyHeader @addTodo="addTodo" />
+        <MyList :todos="todos" />
+        <MyFooter
           :todos="todos"
-          :checkTodo="checkTodo"
-          :deleteTodo="deleteTodo"
+          @checkAllTodo="checkAllTodo"
+          @clearAllTodo="clearAllTodo"
         />
-        <MyFooter :todos="todos" :checkAllTodo="checkAllTodo" :clearAllTodo="clearAllTodo" />
       </div>
     </div>
   </div>
@@ -18,7 +18,6 @@
 import MyHeader from "./components/MyHeader";
 import MyFooter from "./components/MyFooter";
 import MyList from "./components/MyList";
-
 export default {
   name: "App",
   components: {
@@ -28,11 +27,7 @@ export default {
   },
   data() {
     return {
-      todos: [
-        { id: "001", title: "吃饭", done: true },
-        { id: "002", title: "学习", done: false },
-        { id: "003", title: "打游戏", done: true },
-      ],
+      todos: JSON.parse(localStorage.getItem("todos")) || [],
     };
   },
   methods: {
@@ -64,6 +59,22 @@ export default {
         return !todo.done;
       });
     },
+  },
+  watch: {
+    todos: {
+      deep: true,
+      handler(value) {
+        localStorage.setItem("todos", JSON.stringify(value));
+      },
+    },
+  },
+  mounted() {
+    this.$bus.$on("checkTodo", this.checkTodo);
+    this.$bus.$on("deleteTodo", this.deleteTodo);
+  },
+  beforeDestroy() {
+    this.$bus.$off("checkTodo");
+    this.$bus.$off("deleteTodo");
   },
 };
 </script>
